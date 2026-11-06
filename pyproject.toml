@@ -1,0 +1,58 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sipl-kit"
+dynamic = ["version"]
+description = "SIPL (SImple Programming Language) toolkit: grammar, parser, interpreter, trace, semantic terms and CLI"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Vitalii Fedin", email = "vfedin868@gmail.com" }]
+keywords = ["sipl", "interpreter", "programming-theory", "semantics", "education"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Education",
+    "Topic :: Software Development :: Interpreters",
+]
+dependencies = ["lark>=1.1,<2"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6", "mypy>=1.10", "jsonschema>=4"]
+
+[project.scripts]
+sipl = "sipl.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/exite-off/sipl-toolkit"
+Changelog = "https://github.com/exite-off/sipl-toolkit/blob/main/CHANGELOG.md"
+
+[tool.hatch.version]
+path = "src/sipl/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sipl"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "examples", "grammar", "docs", "README.md", "CHANGELOG.md", "LICENSE"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=sipl --cov-report=term-missing --cov-fail-under=80"
+
+[tool.coverage.run]
+omit = ["src/sipl/__main__.py"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.10"
+files = ["src/sipl"]
+ignore_missing_imports = true
