@@ -1,0 +1,4 @@
+// header
+begin /* block
+comment */ X := 1 // trailing
+end

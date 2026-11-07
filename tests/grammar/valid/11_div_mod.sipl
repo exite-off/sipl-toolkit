@@ -1,0 +1,1 @@
+begin Q := X div 2; R := X mod 2 end

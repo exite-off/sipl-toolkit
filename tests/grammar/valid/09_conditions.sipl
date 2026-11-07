@@ -1,0 +1,1 @@
+begin if not (X = 1) or X > 2 or ¬ X = 3 ∨ (X > 4) then skip else skip end

@@ -1,0 +1,77 @@
+// SIPL grammar (Lark, LALR(1)).
+// Follows the BNF from "Теорія програмування. Практикум" (2024), practical work 1:
+//   P ::= begin S end                                            P1
+//   S ::= x := a | S1 ; S2 | if b then S1 else S2
+//       | while b do S | begin S end | skip                      S1-S6
+//   a ::= n | x | a1 + a2 | a1 - a2 | a1 * a2 | (a)              A1-A6
+//   b ::= a1 = a2 | a1 > a2 | b1 or b2 | not b | (b)             B1-B5
+// Ambiguity of the BNF is resolved by priorities:
+//   ";" is the weakest, so "while b do S1; S2" means "(while b do S1); S2".
+//   "*" binds tighter than "+" and "-", all binary operators are left-assoc.
+//   "not" binds tighter than "or".
+// Extensions (marked SIPL+ in docs/language.md): div, mod, comments.
+
+start: program
+
+program: "begin" seq "end"
+
+seq: stmt (";" stmt)*
+
+?stmt: assign
+     | if_stmt
+     | while_stmt
+     | block
+     | skip
+
+assign: VAR ":=" aexp
+if_stmt: "if" bexp "then" stmt "else" stmt
+while_stmt: "while" bexp "do" stmt
+block: "begin" seq "end"
+skip: "skip"
+
+?aexp: term
+     | aexp PLUS term   -> binop
+     | aexp MINUS term  -> binop
+
+?term: factor
+     | term STAR factor -> binop
+     | term DIV factor  -> binop
+     | term MOD factor  -> binop
+
+?factor: num
+       | var
+       | "(" aexp ")"
+
+num: MINUS? INT
+var: VAR
+
+?bexp: bterm
+     | bexp OR bterm    -> or_
+
+?bterm: NOT bterm       -> not_
+      | batom
+
+?batom: aexp EQ aexp    -> compare
+      | aexp GT aexp    -> compare
+      | "(" bexp ")"
+
+PLUS: "+"
+MINUS: "-"
+STAR: "*"
+DIV.2: /div\b/
+MOD.2: /mod\b/
+EQ: "="
+GT: ">"
+OR.2: /or\b/ | "∨" | "\\/"
+NOT.2: /not\b/ | "¬" | "!"
+
+VAR: /[A-Za-z_][A-Za-z0-9_]*/
+INT: /[0-9]+/
+
+LINE_COMMENT: /\/\/[^\n]*/
+BLOCK_COMMENT: /\/\*(.|\n)*?\*\//
+
+%import common.WS
+%ignore WS
+%ignore LINE_COMMENT
+%ignore BLOCK_COMMENT
