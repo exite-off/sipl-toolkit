@@ -1,0 +1,6 @@
+// greatest common divisor by subtraction (x, y > 0)
+begin
+    while not (X = Y) do
+        if X > Y then X := X - Y else Y := Y - X;
+    G := X
+end

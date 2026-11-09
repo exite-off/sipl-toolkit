@@ -1,0 +1,14 @@
+// F(n), F(1) = F(2) = 1 (n > 0), variant 11
+begin
+    A := 0;
+    B := 1;
+    I := 1;
+    while N > I do
+    begin
+        T := A + B;
+        A := B;
+        B := T;
+        I := I + 1
+    end;
+    F := B
+end
