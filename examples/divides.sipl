@@ -1,0 +1,7 @@
+// D = 1 if y divides x, using only +, - (x, y > 0), variant 14
+begin
+    R := X;
+    while R > Y or R = Y do
+        R := R - Y;
+    if R = 0 then D := 1 else D := 0
+end

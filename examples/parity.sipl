@@ -1,0 +1,7 @@
+// E = 1 if n is even, else E = 0, without div/mod (n > 0), variant 12
+begin
+    M := N;
+    while M > 1 do
+        M := M - 2;
+    if M = 0 then E := 1 else E := 0
+end

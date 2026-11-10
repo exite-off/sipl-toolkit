@@ -1,0 +1,4 @@
+// Y is never assigned: run without -s Y=...
+begin
+    X := Y + 1
+end

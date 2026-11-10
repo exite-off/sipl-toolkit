@@ -1,0 +1,6 @@
+// floor(sqrt(n)) using *, +, - (n > 0), variant 16
+begin
+    R := 0;
+    while not ((R + 1) * (R + 1) > N) do
+        R := R + 1
+end

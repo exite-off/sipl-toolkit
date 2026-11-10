@@ -1,0 +1,6 @@
+// never stops: run it with a small --max-steps
+begin
+    X := 0;
+    while 1 > 0 do
+        X := X + 1
+end
