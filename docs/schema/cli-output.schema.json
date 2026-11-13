@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/exite-off/sipl-toolkit/docs/schema/cli-output.schema.json",
+  "title": "sipl CLI --json output, schema_version 1",
+  "type": "object",
+  "required": ["schema_version", "command", "file", "ok", "diagnostics"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "command": { "enum": ["parse", "check", "run", "trace", "term"] },
+    "file": { "type": "string" },
+    "ok": { "type": "boolean" },
+    "diagnostics": { "type": "array", "items": { "$ref": "#/$defs/diagnostic" } },
+    "ast": { "$ref": "#/$defs/node" },
+    "variables": { "type": "array", "items": { "type": "string" } },
+    "status": { "enum": ["ok", "error", "step_limit"] },
+    "initial_state": { "$ref": "#/$defs/state" },
+    "state": { "$ref": "#/$defs/state" },
+    "steps": { "type": "integer", "minimum": 0 },
+    "trace": { "type": "array", "items": { "$ref": "#/$defs/event" } },
+    "term": { "type": "string" },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["rule", "lhs", "rhs"],
+        "properties": { "rule": { "type": "string" }, "lhs": { "type": "string" }, "rhs": { "type": "string" } }
+      }
+    },
+    "tree": { "type": "object", "required": ["term"] }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "command": { "enum": ["run", "trace"] }, "ok": { "const": true } } },
+      "then": { "required": ["status", "initial_state", "state", "steps"] }
+    },
+    {
+      "if": { "properties": { "command": { "const": "trace" }, "ok": { "const": true } } },
+      "then": { "required": ["trace"] }
+    },
+    {
+      "if": { "properties": { "command": { "const": "parse" }, "ok": { "const": true } } },
+      "then": { "required": ["ast"] }
+    },
+    {
+      "if": { "properties": { "command": { "const": "term" }, "ok": { "const": true } } },
+      "then": { "required": ["term", "tree", "rules"] }
+    }
+  ],
+  "$defs": {
+    "span": {
+      "type": "object",
+      "required": ["line", "column", "end_line", "end_column", "start", "end"],
+      "properties": {
+        "line": { "type": "integer", "minimum": 0 },
+        "column": { "type": "integer", "minimum": 0 },
+        "end_line": { "type": "integer", "minimum": 0 },
+        "end_column": { "type": "integer", "minimum": 0 },
+        "start": { "type": "integer", "minimum": 0 },
+        "end": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "required": ["severity", "code", "message", "span"],
+      "properties": {
+        "severity": { "enum": ["error", "warning"] },
+        "code": { "type": "string", "pattern": "^E[0-9]{3}$" },
+        "message": { "type": "string" },
+        "span": { "$ref": "#/$defs/span" }
+      }
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": { "type": "integer" }
+    },
+    "node": {
+      "type": "object",
+      "required": ["type", "span"],
+      "properties": {
+        "type": {
+          "enum": ["Program", "Assign", "Seq", "If", "While", "Block", "Skip",
+                   "Num", "Var", "BinOp", "Compare", "Or", "Not"]
+        },
+        "span": { "$ref": "#/$defs/span" }
+      }
+    },
+    "event": {
+      "type": "object",
+      "required": ["kind", "step", "state"],
+      "properties": {
+        "kind": { "enum": ["start", "before_statement", "after_statement", "assign", "condition", "finish", "error"] },
+        "step": { "type": "integer", "minimum": 0 },
+        "node": { "type": "string" },
+        "span": { "$ref": "#/$defs/span" },
+        "state": { "$ref": "#/$defs/state" },
+        "variable": { "type": "string" },
+        "old": { "type": ["integer", "null"] },
+        "new": { "type": "integer" },
+        "construct": { "enum": ["if", "while"] },
+        "value": { "type": "boolean" },
+        "iteration": { "type": "integer" },
+        "error": { "$ref": "#/$defs/diagnostic" }
+      }
+    }
+  }
+}

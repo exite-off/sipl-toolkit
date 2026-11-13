@@ -3,6 +3,13 @@
 Format: [Keep a Changelog](https://keepachangelog.com/), versions: [SemVer](https://semver.org/).
 One version number is used for the Python package `sipl-kit` and the VS Code extension `sipl-vscode`.
 
+## [0.3.0] - 2026-11-19
+
+### Added
+- `sipl` CLI (CORE-05): `parse`, `check`, `run`, `trace`, `term`; `--json` output with JSON Schema
+  `docs/schema/cli-output.schema.json`; stable exit codes 0-4.
+- Semantic terms in course notation with the list of applied rules (SEM-01).
+
 ## [0.2.0] - 2026-11-19
 
 ### Added
