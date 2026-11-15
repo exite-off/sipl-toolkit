@@ -1,0 +1,154 @@
+{
+  "name": "sipl-vscode",
+  "displayName": "SIPL Language Support",
+  "description": "Syntax highlighting, snippets, Run/Check/Trace commands and diagnostics for SIPL (SImple Programming Language)",
+  "version": "0.4.0",
+  "publisher": "exite-off",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/exite-off/sipl-toolkit"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "keywords": [
+    "sipl",
+    "programming theory",
+    "education"
+  ],
+  "main": "./src/extension.js",
+  "activationEvents": [
+    "onLanguage:sipl"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "sipl",
+        "aliases": [
+          "SIPL",
+          "sipl"
+        ],
+        "extensions": [
+          ".sipl"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "sipl",
+        "scopeName": "source.sipl",
+        "path": "./syntaxes/sipl.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "sipl",
+        "path": "./snippets/sipl.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "sipl.run",
+        "title": "Run SIPL",
+        "category": "SIPL",
+        "icon": "$(play)"
+      },
+      {
+        "command": "sipl.check",
+        "title": "Check SIPL",
+        "category": "SIPL",
+        "icon": "$(check)"
+      },
+      {
+        "command": "sipl.trace",
+        "title": "Trace SIPL",
+        "category": "SIPL"
+      },
+      {
+        "command": "sipl.term",
+        "title": "Show Semantic Term",
+        "category": "SIPL"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "sipl.run",
+          "when": "editorLangId == sipl",
+          "group": "navigation"
+        },
+        {
+          "command": "sipl.check",
+          "when": "editorLangId == sipl",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "sipl.run",
+          "when": "editorLangId == sipl"
+        },
+        {
+          "command": "sipl.check",
+          "when": "editorLangId == sipl"
+        },
+        {
+          "command": "sipl.trace",
+          "when": "editorLangId == sipl"
+        },
+        {
+          "command": "sipl.term",
+          "when": "editorLangId == sipl"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "sipl.run",
+        "key": "ctrl+f5",
+        "mac": "cmd+f5",
+        "when": "editorLangId == sipl"
+      }
+    ],
+    "configuration": {
+      "title": "SIPL",
+      "properties": {
+        "sipl.pythonPath": {
+          "type": "string",
+          "default": "",
+          "description": "Python interpreter with the sipl-kit package installed. Empty: 'python' on Windows, 'python3' elsewhere. Used when sipl.cliPath is empty."
+        },
+        "sipl.cliPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the 'sipl' executable. Empty: run '<python> -m sipl'."
+        },
+        "sipl.maxSteps": {
+          "type": "number",
+          "default": 100000,
+          "description": "Step limit for Run/Trace (protects from infinite loops)."
+        },
+        "sipl.checkOnType": {
+          "type": "boolean",
+          "default": true,
+          "description": "Check syntax while typing (otherwise only on open and save)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\"",
+    "package": "vsce package --out dist/"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.2.0",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.3.2"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "Program": {
+    "prefix": "program",
+    "body": ["begin", "\t${1:skip}", "end"],
+    "description": "SIPL program: begin S end"
+  },
+  "Block": {
+    "prefix": "begin",
+    "body": ["begin", "\t$0", "end"],
+    "description": "Block statement"
+  },
+  "While": {
+    "prefix": "while",
+    "body": ["while ${1:X > 0} do", "begin", "\t$0", "end"],
+    "description": "while b do S"
+  },
+  "If": {
+    "prefix": "if",
+    "body": ["if ${1:X > 0} then", "\t${2:skip}", "else", "\t${3:skip}"],
+    "description": "if b then S1 else S2 (else is required)"
+  },
+  "Assign": {
+    "prefix": "assign",
+    "body": ["${1:X} := ${2:0}"],
+    "description": "x := a"
+  },
+  "Power": {
+    "prefix": "power",
+    "body": [
+      "begin",
+      "\tR := 1;",
+      "\twhile Y > 0 do",
+      "\tbegin",
+      "\t\tR := R * X;",
+      "\t\tY := Y - 1",
+      "\tend",
+      "end"
+    ],
+    "description": "x^y example from the course"
+  }
+}
