@@ -7,14 +7,26 @@ function defaultPython(platform = process.platform) {
   return platform === "win32" ? "python" : "python3";
 }
 
-// returns [command, baseArgs] for running the CLI
-function resolveCommand(config, platform = process.platform) {
+// commands to try in order, each is [command, baseArgs]
+function candidates(config, platform = process.platform) {
   const cliPath = (config.cliPath || "").trim();
   if (cliPath) {
-    return [cliPath, []];
+    return [[cliPath, []]];
   }
-  const python = (config.pythonPath || "").trim() || defaultPython(platform);
-  return [python, ["-m", "sipl"]];
+  const python = (config.pythonPath || "").trim();
+  if (python) {
+    return [[python, ["-m", "sipl"]]];
+  }
+  if (platform === "win32") {
+    // "python" may be the Microsoft Store stub, so the py launcher goes first
+    return [["py", ["-3", "-m", "sipl"]], ["python", ["-m", "sipl"]], ["python3", ["-m", "sipl"]], ["sipl", []]];
+  }
+  return [["python3", ["-m", "sipl"]], ["python", ["-m", "sipl"]], ["sipl", []]];
+}
+
+// returns [command, baseArgs] that will be tried first
+function resolveCommand(config, platform = process.platform) {
+  return candidates(config, platform)[0];
 }
 
 // "X=5, Y=2" -> ["-s", "X=5", "-s", "Y=2"], throws on bad input
@@ -69,50 +81,109 @@ function formatEvent(e) {
   }
 }
 
-// runs the CLI with source on stdin, resolves with {code, json, stderr}
-function runCli(config, args, source, options = {}) {
-  const [command, base] = resolveCommand(config, options.platform);
+// true when the command did not start or is not a working sipl
+function isMissing(res) {
+  if (res.error) {
+    return res.error.code === "ENOENT";
+  }
+  return (
+    res.code === 9009 ||
+    /Python was not found/i.test(res.stderr) ||
+    /No module named '?sipl'?/.test(res.stderr) ||
+    /is not recognized as an internal or external command/i.test(res.stderr)
+  );
+}
+
+function spawnOnce(command, argv, source, options) {
   const spawnFn = options.spawn || spawn;
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     let child;
     try {
-      child = spawnFn(command, [...base, ...args, "-", "--json"], {
+      child = spawnFn(command, argv, {
         cwd: options.cwd,
         env: { ...process.env, PYTHONIOENCODING: "utf-8", PYTHONUTF8: "1" },
       });
-    } catch (err) {
-      reject(err);
+    } catch (error) {
+      resolve({ error, stdout: "", stderr: "" });
       return;
     }
     let stdout = "";
     let stderr = "";
+    let done = false;
+    const finish = (res) => {
+      if (!done) {
+        done = true;
+        resolve(res);
+      }
+    };
     child.stdout.setEncoding("utf8");
     child.stderr.setEncoding("utf8");
     child.stdout.on("data", (d) => (stdout += d));
     child.stderr.on("data", (d) => (stderr += d));
-    child.on("error", (err) => {
-      if (err.code === "ENOENT") {
-        reject(new Error(`Cannot start "${command}". Install sipl-kit (pip install sipl-kit) or set sipl.pythonPath / sipl.cliPath.`));
-      } else {
-        reject(err);
-      }
-    });
-    child.on("close", (code) => {
-      let json = null;
-      try {
-        json = stdout.trim() ? JSON.parse(stdout) : null;
-      } catch (_) {
-        json = null;
-      }
-      if (json === null) {
-        const hint = /No module named sipl/.test(stderr) ? " Install it with: pip install sipl-kit" : "";
-        reject(new Error(`sipl exited with code ${code}: ${stderr.trim() || "no output"}.${hint}`));
-        return;
-      }
-      resolve({ code, json, stderr });
-    });
+    child.on("error", (error) => finish({ error, stdout, stderr }));
+    child.on("close", (code) => finish({ code, stdout, stderr }));
+    child.stdin.on("error", () => {});
     child.stdin.end(source, "utf8");
   });
 }
 
-module.exports = { defaultPython, resolveCommand, stateArgs, spanToRange, formatState, formatEvent, runCli };
+function missingMessage(tried, configured, platform) {
+  const list = tried.map((c) => `"${c}"`).join(", ");
+  if (configured) {
+    return `Cannot run sipl with ${list}. Check sipl.pythonPath / sipl.cliPath and that sipl-kit is installed there (pip install sipl-kit).`;
+  }
+  let msg = `Python with sipl-kit was not found (tried ${list}). Install it with "pip install sipl-kit" ` +
+    "and, if Python is not on PATH, set sipl.pythonPath to the full path of python.exe.";
+  if (platform === "win32") {
+    msg += " A \"Python was not found\" message comes from the Microsoft Store alias: " +
+      "turn it off in Settings > Apps > Advanced app settings > App execution aliases.";
+  }
+  return msg;
+}
+
+// the command that worked last time, so the fallback search runs once
+let cached = null;
+
+// runs the CLI with source on stdin, resolves with {code, json, stderr}
+async function runCli(config, args, source, options = {}) {
+  const platform = options.platform || process.platform;
+  let list = candidates(config, platform);
+  const configured = list.length === 1;
+  if (!configured && cached && cached.platform === platform) {
+    list = [cached.command, ...list.filter((c) => c[0] !== cached.command[0])];
+  }
+  const tried = [];
+  for (const [command, base] of list) {
+    tried.push(command);
+    const res = await spawnOnce(command, [...base, ...args, "-", "--json"], source, options);
+    if (res.error && !isMissing(res)) {
+      throw res.error;
+    }
+    if (isMissing(res)) {
+      if (cached && cached.command[0] === command) {
+        cached = null;
+      }
+      continue;
+    }
+    let json = null;
+    try {
+      json = res.stdout.trim() ? JSON.parse(res.stdout) : null;
+    } catch (_) {
+      json = null;
+    }
+    if (json === null) {
+      throw new Error(`sipl exited with code ${res.code}: ${res.stderr.trim() || "no output"}`);
+    }
+    if (!configured) {
+      cached = { platform, command: [command, base] };
+    }
+    return { code: res.code, json, stderr: res.stderr };
+  }
+  throw new Error(missingMessage(tried, configured, platform));
+}
+
+function resetCache() {
+  cached = null;
+}
+
+module.exports = { defaultPython, candidates, resolveCommand, resetCache, stateArgs, spanToRange, formatState, formatEvent, runCli };
