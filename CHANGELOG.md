@@ -3,6 +3,17 @@
 Format: [Keep a Changelog](https://keepachangelog.com/), versions: [SemVer](https://semver.org/).
 One version number is used for the Python package `sipl-kit` and the VS Code extension `sipl-vscode`.
 
+## [0.4.1] - 2026-11-18
+
+### Fixed
+- VS Code extension on Windows: when `python` is the Microsoft Store alias (exit code 9009) the extension
+  now tries `py -3`, `python`, `python3` and `sipl` and remembers the one that works.
+  If none works, the error explains how to set `sipl.pythonPath`.
+- CI: extension tests run on Node 22 without a glob pattern.
+
+### Added
+- Screenshots of the VS Code extension in both READMEs (REL-04).
+
 ## [0.4.0] - 2026-11-18
 
 ### Added

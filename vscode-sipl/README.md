@@ -13,19 +13,27 @@ the extension calls `sipl ... --json` and shows the results.
 - **SIPL: Trace** prints every execution event (assign, condition, before/after statement)
 - **SIPL: Show Semantic Term** prints the term in course notation with all applied rules
 
+![Syntax highlighting](https://raw.githubusercontent.com/exite-off/sipl-toolkit/v0.4.1/docs/images/highlight.png)
+
+![Run output](https://raw.githubusercontent.com/exite-off/sipl-toolkit/v0.4.1/docs/images/run.png)
+
+![Syntax error diagnostics](https://raw.githubusercontent.com/exite-off/sipl-toolkit/v0.4.1/docs/images/error.png)
+
 
 ## Requirements
 
 - VS Code 1.85 or newer
 - Python 3.10+ with the toolkit installed: `pip install sipl-kit`
 
-If Python is not on PATH, set `sipl.pythonPath` (for example `C:\\Users\\me\\sipl\\.venv\\Scripts\\python.exe`).
+The extension looks for Python with `sipl-kit` by itself: `py -3`, `python`, `python3`, `sipl` on Windows,
+`python3`, `python`, `sipl` elsewhere. If none works (for example `python` opens the Microsoft Store on Windows),
+set `sipl.pythonPath` (for example `C:\\Users\\me\\sipl\\.venv\\Scripts\\python.exe`).
 
 ## Settings
 
 | Setting | Default | Meaning |
 |---|---|---|
-| `sipl.pythonPath` | `python` / `python3` | interpreter with `sipl-kit` installed |
+| `sipl.pythonPath` | empty: search | interpreter with `sipl-kit` installed |
 | `sipl.cliPath` | empty | path to the `sipl` executable, used instead of `python -m sipl` |
 | `sipl.maxSteps` | 100000 | step limit for Run/Trace |
 | `sipl.checkOnType` | true | live syntax check |

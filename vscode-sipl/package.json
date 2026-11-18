@@ -2,7 +2,7 @@
   "name": "sipl-vscode",
   "displayName": "SIPL Language Support",
   "description": "Syntax highlighting, snippets, Run/Check/Trace commands and diagnostics for SIPL (SImple Programming Language)",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "publisher": "exite-off",
   "license": "MIT",
   "repository": {
@@ -122,7 +122,7 @@
         "sipl.pythonPath": {
           "type": "string",
           "default": "",
-          "description": "Python interpreter with the sipl-kit package installed. Empty: 'python' on Windows, 'python3' elsewhere. Used when sipl.cliPath is empty."
+          "description": "Python interpreter with the sipl-kit package installed. Empty: try 'py -3', 'python', 'python3' and 'sipl' on Windows, 'python3', 'python' and 'sipl' elsewhere. Used when sipl.cliPath is empty."
         },
         "sipl.cliPath": {
           "type": "string",

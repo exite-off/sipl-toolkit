@@ -101,15 +101,27 @@ print(derive(program).term)                     # AS^R(1) · WH(...)
 
 1. Встановіть пакет: `pip install sipl-kit`.
 2. Завантажте `sipl-vscode-<версія>.vsix` з [Releases](https://github.com/exite-off/sipl-toolkit/releases)
-   і встановіть: `code --install-extension sipl-vscode-0.4.0.vsix`.
+   і встановіть: `code --install-extension sipl-vscode-0.4.1.vsix`.
 3. Відкрийте `.sipl`-файл. Помилки підсвічуються одразу під час набору.
    Кнопки ▶ (Run) і ✓ (Check) у заголовку редактора, Ctrl+F5 запускає програму.
    Команди *SIPL: Trace* і *SIPL: Show Semantic Term* доступні з Command Palette.
 
-Якщо Python не в PATH, вкажіть інтерпретатор у налаштуванні `sipl.pythonPath`.
+Розширення саме шукає Python з `sipl-kit`: у Windows пробує `py -3`, `python`, `python3`, `sipl`,
+в інших системах `python3`, `python`, `sipl`. Якщо не знаходить (наприклад, `python` у Windows відкриває
+Microsoft Store), вкажіть повний шлях до інтерпретатора в налаштуванні `sipl.pythonPath`.
 Сумісність: VS Code 1.85+, Windows / Linux / macOS.
 
-<!-- screenshots: docs/images/highlight.png, docs/images/run.png -->
+Підсвітка синтаксису, кнопки Run ▶ і Check ✓:
+
+![Підсвітка SIPL у VS Code](https://raw.githubusercontent.com/exite-off/sipl-toolkit/v0.4.1/docs/images/highlight.png)
+
+Результат *SIPL: Run* для `X=4, Y=4` у панелі Output:
+
+![Запуск програми](https://raw.githubusercontent.com/exite-off/sipl-toolkit/v0.4.1/docs/images/run.png)
+
+Синтаксична помилка підкреслюється в редакторі з точним рядком і колонкою:
+
+![Діагностика помилки](https://raw.githubusercontent.com/exite-off/sipl-toolkit/v0.4.1/docs/images/error.png)
 
 ## Приклади
 
