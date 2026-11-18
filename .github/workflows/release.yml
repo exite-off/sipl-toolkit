@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check that tag matches versions
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PY=$(python -c "import re;print(re.search(r'__version__ = \"(.+)\"', open('src/sipl/__init__.py').read()).group(1))")
+          EXT=$(node -p "require('./vscode-sipl/package.json').version")
+          echo "tag=$TAG python=$PY extension=$EXT"
+          test "$TAG" = "$PY"
+          test "$TAG" = "$EXT"
+      - name: Test
+        run: |
+          python -m pip install -e ".[dev]"
+          pytest
+      - name: Build Python package
+        run: |
+          python -m pip install build
+          python -m build
+      - name: Build .vsix
+        working-directory: vscode-sipl
+        run: |
+          npm ci
+          mkdir -p dist
+          npx vsce package --out dist
+          cp dist/*.vsix ../dist/
+      - name: Release notes from CHANGELOG
+        run: |
+          awk -v v="${GITHUB_REF_NAME#v}" '
+            $0 ~ "^## \\[?"v"\\]?" {on=1; next}
+            on && /^## / {exit}
+            on {print}
+          ' CHANGELOG.md > notes.md
+          cat notes.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --title "SIPL Toolkit $GITHUB_REF_NAME" --notes-file notes.md
+
+  pypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Keep only Python files
+        run: rm -f dist/*.vsix
+      - uses: pypa/gh-action-pypi-publish@release/v1

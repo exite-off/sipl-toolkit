@@ -2,6 +2,6 @@
 
 from .parser import parse, parse_file
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = ["parse", "parse_file", "__version__"]

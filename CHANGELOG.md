@@ -3,6 +3,14 @@
 Format: [Keep a Changelog](https://keepachangelog.com/), versions: [SemVer](https://semver.org/).
 One version number is used for the Python package `sipl-kit` and the VS Code extension `sipl-vscode`.
 
+## [0.4.0] - 2026-11-19
+
+### Added
+- VS Code extension `sipl-vscode` (IDE-01, IDE-02): `.sipl` language registration, TextMate highlighting,
+  comments, `begin`/`end` brackets, auto indent, snippets.
+- Commands *SIPL: Run*, *Check*, *Trace*, *Show Semantic Term*; live diagnostics with exact line and column.
+- Release workflow: GitHub Release with wheel, sdist and `.vsix`; publishing to PyPI.
+
 ## [0.3.0] - 2026-11-19
 
 ### Added
